@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Life Limited - Background Remover</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-container {
+            margin-bottom: 1rem;
+        }
+
+        .upload-box {
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .upload-box:hover, .upload-box.dragover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-box svg {
+            width: 60px;
+            height: 60px;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .upload-box h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-box p {
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .sample-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sample-item {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .sample-item:hover {
+            transform: scale(1.05);
+        }
+
+        .sample-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .legal {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        #preview, #result {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        #preview img, #processedImage {
+            max-width: 100%;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .button-container {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        button.secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        button.secondary:hover {
+            opacity: 0.9;
+            background: #cbd5e1;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container" style="text-align: center; margin-bottom: 1.5rem;">
+            <img src="Happy life Limited.png" alt="Happy Life Limited Logo" id="companyLogo" style="height: 120px;">
+        </div>
+        <h1>Happy Life Limited</h1>
+        <p class="subtitle">Remove the background from any image in seconds</p>
+
+        <div class="upload-box" id="dropZone">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <h2>Upload an image</h2>
+            <p>or drag and drop it here</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <button onclick="document.getElementById('fileInput').click()">Choose File</button>
+        </div>
+
+        <div class="sample-grid">
+            <div class="sample-item">
+                <img src="1.jpg" alt="Sample 1">
+            </div>
+            <div class="sample-item">
+                <img src="./2.jpg" alt="Sample 2">
+            </div>
+            <div class="sample-item">
+                <img src="./3.jpg" alt="Sample 3">
+            </div>
+            <div class="sample-item">
+                <img src="./4.jpg" alt="Sample 4">
+            </div>
+        </div>
+
+        <!-- Add Preview Section -->
+        <div id="preview">
+            <img id="previewImage" alt="Preview">
+            <div class="button-container">
+                <button onclick="processImage()">Remove Background</button>
+                <button onclick="cancelProcessing()" class="secondary">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Modified Result Section -->
+        <div id="result">
+            <img id="processedImage" alt="Processed result">
+            <div class="button-container">
+                <button onclick="downloadResult()">Download</button>
+                <button onclick="startOver()" class="secondary">Start Over</button>
+            </div>
+        </div>
+
+        <p class="legal">
+             By using this service, you agree to our <a href="https://cybersecveillance.com/app-removal-back/" target="_blank">Terms and Conditions</a>.
+        </p>
+    </div>
+
+    <script>
+        // Replace with your actual API key when in production
+        const API_KEY = 's9hqJZewCNAHjckFUWHjpx3W';
+        const API_URL = 'https://api.remove.bg/v1.0/removebg';
+
+        // Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const resultDiv = document.getElementById('result');
+        const previewDiv = document.getElementById('preview');
+        let currentFile = null;
+
+        // Event Listeners
+        fileInput.addEventListener('change', (e) => handleFileSelect(e));
+        document.addEventListener('paste', handlePaste);
+        
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                handleFileFromSource(file);
+            }
+        });
+
+        // Handle file from any source
+        function handleFileFromSource(file) {
+            if (!file) return;
+            
+            currentFile = file;
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                document.getElementById('previewImage').src = event.target.result;
+                previewDiv.style.display = 'block';
+                dropZone.style.display = 'none';
+                document.querySelector('.sample-grid').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Handle file selection from input
+        function handleFileSelect(e) {
+            if (e.target && e.target.files && e.target.files.length > 0) {
+                handleFileFromSource(e.target.files[0]);
+            }
+        }
+
+        async function processImage() {
+            if (!currentFile) return;
+
+            // Demo mode - if no API key is provided
+            if (API_KEY === 'YOUR_API_KEY') {
+                alert('This is a demo. In a real application, you would need a valid API key from remove.bg');
+                // For demo purposes, just show a result
+                setTimeout(() => {
+                    document.getElementById('processedImage').src = document.getElementById('previewImage').src;
+                    previewDiv.style.display = 'none';
+                    resultDiv.style.display = 'block';
+                    window.scrollTo(0, document.body.scrollHeight);
+                }, 1500);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image_file', currentFile);
+            formData.append('size', 'auto');
+
+            try {
+                showLoading(true);
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': API_KEY },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to process image');
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                document.getElementById('processedImage').src = url;
+                previewDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                window.scrollTo(0, document.body.scrollHeight);
+            } catch (error) {
+                alert(error.message || 'An error occurred');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function cancelProcessing() {
+            currentFile = null;
+            previewDiv.style.display = 'none';
+            dropZone.style.display = 'block';
+            document.querySelector('.sample-grid').style.display = 'grid';
+            fileInput.value = '';
+        }
+
+        function startOver() {
+            currentFile = null;
+            resultDiv.style.display = 'none';
+            dropZone.style.display = 'block';
+            document.querySelector('.sample-grid').style.display = 'grid';
+            fileInput.value = '';
+        }
+
+        function handlePaste(e) {
+            const items = e.clipboardData.items;
+            for (const item of items) {
+                if (item.type.startsWith('image')) {
+                    const file = item.getAsFile();
+                    handleFileFromSource(file);
+                    break;
+                }
+            }
+        }
+
+        function downloadResult() {
+            const a = document.createElement('a');
+            a.href = document.getElementById('processedImage').src;
+            a.download = `background-removed-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function showLoading(show) {
+            const loader = document.getElementById('loading');
+            if (show && !loader) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading';
+                loadingDiv.style.position = 'fixed';
+                loadingDiv.style.top = '0';
+                loadingDiv.style.left = '0';
+                loadingDiv.style.width = '100%';
+                loadingDiv.style.height = '100%';
+                loadingDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                loadingDiv.style.display = 'flex';
+                loadingDiv.style.justifyContent = 'center';
+                loadingDiv.style.alignItems = 'center';
+                loadingDiv.innerHTML = '<div class="spinner"></div>';
+                document.body.appendChild(loadingDiv);
+            } else if (!show && loader) {
+                loader.remove();
+            }
+        }
+
+        // Initialize sample images
+        document.querySelectorAll('.sample-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // In a real app, you would handle sample image processing here
+                alert('Sample image processing would happen here');
+            });
+        });
+    </script>
+</body>
+</html>
